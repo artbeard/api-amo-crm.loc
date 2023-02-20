@@ -35,9 +35,20 @@ export class ApiService {
 		return this.createEntity('company', companyName, host, token);
 	}
 
+	createContact(contactName: string, host: string, token: string): Promise<any>
+	{
+		return this.createEntity('contact', contactName, host, token);
+	}
+
+	createDeal(dealName: string, host: string, token: string): Promise<any>
+	{
+		return this.createEntity('deal', dealName, host, token);
+	}
+
 	private createEntity(entityType:string, entityName: string, host: string, token: string): Promise<any>
 	{
-		return this.httpService.axiosRef.post(`https://${host}/api/v4/${this.entityTypes[entityType as 'company' | 'contact' | 'deal' ]}`,
+		return this.httpService.axiosRef.post(
+			`https://${host}/api/v4/${this.entityTypes[entityType as 'company' | 'contact' | 'deal' ]}`,
 			[{
 				name: entityName,
 				request_id: entityName + 'create' //
@@ -52,17 +63,23 @@ export class ApiService {
 				return resp.data;
 			})
 			.catch(err => {
-				if (err.response.status === 401)
+				if (err.response?.status === 401)
 				{
 					throw new HttpException('Вы неавторизованы', HttpStatus.UNAUTHORIZED);
 				}
-				else if (err.response.status === 400)
+				else if (err.response?.status === 400)
 				{
-					throw new HttpException(err.response?.data?.detail ?? 'Ошибка валидации', HttpStatus.BAD_REQUEST);
+					throw new HttpException(
+						err.response?.data?.detail ?? 'Ошибка валидации',
+						HttpStatus.BAD_REQUEST
+					);
 				}
 				else
 				{
-					throw new HttpException('Ошибка выполнения запроса', err.response.status);
+					throw new HttpException(
+						'Ошибка выполнения запроса',
+						err?.response?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+					);
 				}
 			})
 	}
