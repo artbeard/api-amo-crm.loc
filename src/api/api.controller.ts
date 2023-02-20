@@ -28,17 +28,26 @@ export class ApiController {
 			session.base_domain = sessionRequest.base_domain;
 		}
 
-		let createdCompany = await this.apiService.createCompany(
-			entityName,
-			session.base_domain,
-			session.access_token
-		);
+		let createdCompany;
+		try {
+			createdCompany = await this.apiService.createCompany(
+				entityName,
+				session.base_domain,
+				session.access_token
+			);
+		}
+		catch (e)
+		{
+			session.access_token = null;
+			session.base_domain = null;
+			throw e;
+		}
+
 
 
 		response.status(HttpStatus.OK).send({
 			id: createdCompany?._embedded?.companies[0].id
 		})
-
 	}
 
 	@Post('/v4/contacts')
