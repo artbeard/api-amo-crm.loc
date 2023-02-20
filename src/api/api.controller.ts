@@ -1,7 +1,7 @@
-import {Controller, Body, Post, Req, Res, Headers, Session, HttpStatus, HttpException} from '@nestjs/common';
-import { Request, Response } from 'express';
-import {AuthService} from "../auth/auth.service";
+import {Controller, Body, Post, Res, Session, HttpStatus, UseGuards} from '@nestjs/common';
+import { Response } from 'express';
 import {ApiService} from "./api.service";
+import {GetauthGuard} from "../getauth/getauth.guard";
 
 interface ICreateEntity{
 	entityName: string
@@ -10,110 +10,61 @@ interface ICreateEntity{
 @Controller('/api')
 export class ApiController {
 
-	//constructor(private authService: AuthService) {}
 	constructor(private apiService: ApiService) {}
 
-
+	@UseGuards(GetauthGuard)
 	@Post('/v4/companies')
 	async create_company(
-		//@Headers() apiKey: Request,
 		@Session() session: Record<string, any>,
 		@Body() { entityName }: ICreateEntity,
 		@Res({ passthrough: true }) response: Response)
 	{
-		if (!session.access_token || !session.base_domain)
-		{
-			let sessionRequest = await this.apiService.getAuthParams('30878566');
-			session.access_token = sessionRequest.access_token;
-			session.base_domain = sessionRequest.base_domain;
-		}
-
-		let createdCompany;
-		try {
-			createdCompany = await this.apiService.createCompany(
-				entityName,
-				session.base_domain,
-				session.access_token
-			);
-		}
-		catch (e)
-		{
-			session.access_token = null;
-			session.base_domain = null;
-			throw e;
-		}
-
-
+		let createdCompany = await this.apiService.createCompany(
+			entityName,
+			session.base_domain,
+			session.access_token
+		);
 
 		response.status(HttpStatus.OK).send({
 			id: createdCompany?._embedded?.companies[0].id
 		})
 	}
 
+
+	@UseGuards(GetauthGuard)
 	@Post('/v4/contacts')
 	async create_contact(
-		@Headers('Authorization') authToken: string,
+		@Session() session: Record<string, any>,
 		@Body() { entityName }: ICreateEntity,
 		@Res({ passthrough: true }) response: Response)
 	{
-		if (!authToken)
-		{
-			response.status(HttpStatus.UNAUTHORIZED).send({
-				detail: 'Необходима авторизация',
-			})
-			return;
-		}
+		let createdContact = await this.apiService.createContact(
+			entityName,
+			session.base_domain,
+			session.access_token
+		);
 
-		let x:boolean = await new Promise(resolve => {
-			setTimeout(()=>{
-				resolve(Math.random() > 0.1)
-			},1000)
+		response.status(HttpStatus.OK).send({
+			id: createdContact?._embedded?.contacts[0].id
 		})
-		if (x)
-		{
-			response.status(HttpStatus.OK).send({
-				id: Math.random() * 1000,
-			})
-		}
-		else
-		{
-			response.status(HttpStatus.BAD_REQUEST).send({
-				detail: 'ОШибка созданя сущности'
-			})
-		}
 	}
 
+	@UseGuards(GetauthGuard)
 	@Post('/v4/leads')
 	async create_lead(
-		@Headers('Authorization') authToken: string,
+		@Session() session: Record<string, any>,
 		@Body() { entityName }: ICreateEntity,
 		@Res({ passthrough: true }) response: Response)
 	{
-		if (!authToken)
-		{
-			response.status(HttpStatus.UNAUTHORIZED).send({
-				detail: 'Необходима авторизация',
-			})
-			return;
-		}
+		let createdDeal = await this.apiService.createDeal(
+			entityName,
+			session.base_domain,
+			session.access_token
+		);
 
-		let x:boolean = await new Promise(resolve => {
-			setTimeout(()=>{
-				resolve(Math.random() > 0.1)
-			},1000)
+		response.status(HttpStatus.OK).send({
+			id: createdDeal?._embedded?.leads[0].id
 		})
-		if (x)
-		{
-			response.status(HttpStatus.OK).send({
-				id: Math.random() * 1000,
-			})
-		}
-		else
-		{
-			response.status(HttpStatus.BAD_REQUEST).send({
-				detail: 'ОШибка созданя сущности'
-			})
-		}
 	}
 
 }
