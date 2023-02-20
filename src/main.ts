@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import * as session from 'express-session';
 import * as hbs from 'hbs';
 import {join} from 'path';
 
@@ -12,7 +13,16 @@ async function bootstrap() {
   app.setViewEngine('hbs');
   // hbs.registerPartials(join(__dirname, '..', 'views', 'layouts'));
   // hbs.registerPartials(join(__dirname, '..', 'views', 'page'));
-  
-  await app.listen(3000);    
+
+
+// somewhere in your initialization file
+	app.use(
+		session({
+			secret: 'klf-sa7984-350940',
+			resave: false,
+			saveUninitialized: false,
+		}),
+	);
+  await app.listen(3000);
 }
 bootstrap();
