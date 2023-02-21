@@ -1,5 +1,6 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from "@nestjs/axios";
+import { EntityType, ICreatedCompanyResult, ICreatedContactResult, ICreatedDealResult } from "../type";
 
 @Injectable()
 export class ApiService {
@@ -7,48 +8,51 @@ export class ApiService {
 		private readonly httpService: HttpService
 	) {}
 
-	getAuthParams(apiKey: string): Promise<any>
+	/**
+	 * Создание Компании
+	 * @param companyName
+	 * @param host
+	 * @param token
+	 */
+	createCompany(companyName: string, host: string, token: string): Promise<ICreatedCompanyResult>
 	{
-		return this.httpService.axiosRef.get('https://test.gnzs.ru/oauth/get-token.php', {
-			headers: {
-				'Content-Type': 'application/json',
-				'X-Client-Id': apiKey
-			}
-		})
-			.then(res => {
-				return res.data
-			})
-			.catch(err => {
-				throw new HttpException('Ошибка получения access_token', HttpStatus.UNAUTHORIZED);
-			})
-
+		return this.createEntity(EntityType.company, companyName, host, token);
 	}
 
-	private entityTypes = {
-		deal: 'leads',
-		contact: 'contacts',
-		company: 'companies'
-	}
-
-	createCompany(companyName: string, host: string, token: string): Promise<any>
+	/**
+	 * Создание контакта
+	 * @param contactName
+	 * @param host
+	 * @param token
+	 */
+	createContact(contactName: string, host: string, token: string): Promise<ICreatedContactResult>
 	{
-		return this.createEntity('company', companyName, host, token);
+		return this.createEntity(EntityType.contact, contactName, host, token);
 	}
 
-	createContact(contactName: string, host: string, token: string): Promise<any>
+	/**
+	 * Создание сделки
+	 * @param dealName
+	 * @param host
+	 * @param token
+	 */
+	createDeal(dealName: string, host: string, token: string): Promise<ICreatedDealResult>
 	{
-		return this.createEntity('contact', contactName, host, token);
+		return this.createEntity(EntityType.deal, dealName, host, token);
 	}
 
-	createDeal(dealName: string, host: string, token: string): Promise<any>
-	{
-		return this.createEntity('deal', dealName, host, token);
-	}
-
+	/**
+	 * Выполнение запроса к API для создания сущности
+	 * @param entityType
+	 * @param entityName
+	 * @param host
+	 * @param token
+	 * @private
+	 */
 	private createEntity(entityType:string, entityName: string, host: string, token: string): Promise<any>
 	{
 		return this.httpService.axiosRef.post(
-			`https://${host}/api/v4/${this.entityTypes[entityType as 'company' | 'contact' | 'deal' ]}`,
+			`https://${host}/api/v4/${entityType}`,
 			[{
 				name: entityName,
 				request_id: entityName + 'create' //

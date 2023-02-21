@@ -2,6 +2,7 @@ import {CanActivate, ExecutionContext, Injectable} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { AuthService } from "../auth/auth.service";
 import { ConfigService } from "@nestjs/config";
+import { IAuthToken} from "../type";
 
 @Injectable()
 export class GetauthGuard implements CanActivate {
@@ -27,9 +28,9 @@ export class GetauthGuard implements CanActivate {
 		{
 			//запрос нового токена
 			return new Promise((resolve) => {
-				const apiKey = this.configService.get<string>('API_KEY');
+				const apiKey:string = this.configService.get<string>('API_KEY');
 				this.authService.getAuthParams(apiKey)
-					.then(authParams => {
+					.then((authParams: IAuthToken) => {
 						session.access_token = authParams.access_token;
 						session.base_domain = authParams.base_domain;
 						session.token_expires = Date.now() + 20*60*1000; //  20 минут
