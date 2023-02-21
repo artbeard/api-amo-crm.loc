@@ -6,16 +6,11 @@ import * as hbs from 'hbs';
 import {join} from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+	const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useStaticAssets(join(__dirname, '..', 'public')); //для отдачи статикик
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('hbs');
-  // hbs.registerPartials(join(__dirname, '..', 'views', 'layouts'));
-  // hbs.registerPartials(join(__dirname, '..', 'views', 'page'));
-
-
-// somewhere in your initialization file
+	app.useStaticAssets(join(__dirname, '..', 'public')); //для отдачи статикик
+	app.setBaseViewsDir(join(__dirname, '..', 'views'));
+	app.setViewEngine('hbs');
 	app.use(
 		session({
 			secret: 'klf-sa7984-350940',
@@ -23,6 +18,6 @@ async function bootstrap() {
 			saveUninitialized: false,
 		}),
 	);
-  await app.listen(3000);
+	await app.listen(3000);
 }
 bootstrap();
